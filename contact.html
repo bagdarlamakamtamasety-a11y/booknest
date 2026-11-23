@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Байланыс — BookNest</title>
+  <meta name="description" content="BookNest дүкенімен байланысу және оқу клубына жазылу формасы.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">BookNest</a>
+      <nav aria-label="Негізгі навигация">
+        <ul class="nav-list">
+          <li><a href="index.html">Басты бет</a></li>
+          <li><a href="books.html">Каталог</a></li>
+          <li><a href="club.html">Оқу клубы</a></li>
+          <li><a href="contact.html" aria-current="page">Байланыс</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Бізбен байланысыңыз</h1>
+    <p>Сұрағыңыз болса немесе оқу клубына жазылғыңыз келсе, төмендегі форманы толтырыңыз.</p>
+
+    <form class="contact-form" action="#" method="post">
+      <div class="form-group">
+        <label for="name">Аты-жөніңіз</label>
+        <input type="text" id="name" name="name" placeholder="Мысалы: Айдос Серіков" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Электрондық пошта (Email)</label>
+        <input type="email" id="email" name="email" placeholder="name@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="topic">Тақырып</label>
+        <select id="topic" name="topic" required>
+          <option value="">Тақырыпты таңдаңыз...</option>
+          <option value="order">Кітапқа тапсырыс беру</option>
+          <option value="club">Оқу клубына қосылу</option>
+          <option value="partnership">Серіктестік</option>
+          <option value="other">Басқа сұрақ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Хабарлама</label>
+        <textarea id="message" name="message" rows="5" placeholder="Хабарламаңызды осында жазыңыз..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn">Жіберу</button>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>Біз туралы</h3>
+        <p>BookNest — кітапсүйер қауымды біріктіретін заманауи онлайн дүкен және оқу клубы.</p>
+      </div>
+      <div>
+        <h3>Сілтемелер</h3>
+        <ul>
+          <li><a href="index.html">Басты бет</a></li>
+          <li><a href="books.html">Каталог</a></li>
+          <li><a href="club.html">Оқу клубы</a></li>
+          <li><a href="contact.html">Байланыс</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Байланыс</h3>
+        <ul>
+          <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://t.me" target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href="mailto:info@booknest.kz">info@booknest.kz</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p> 2026 BookNest. Барлық құқықтар қорғалған.</p>
+    </div>
+  </footer>
+</body>
+</html>
