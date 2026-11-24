@@ -8,6 +8,13 @@ import {
   initBookDetailPage,
   initOpenLibrarySearch
 } from "./advanced-features.js";
+import { initSpaRouter } from "./app-core.js";
+import {
+  initLanguageSwitcher,
+  initAccessibilityHelpers,
+  initDragAndDropToCart,
+  initSalesChart
+} from "./extras-a11y.js";
 
 let catalogBooks = [...fallbackBooks];
 const shop = new ShopManager();
@@ -142,12 +149,13 @@ function initCatalog() {
     if (emptyState) emptyState.hidden = true;
     const sliceToShow = isFeaturedOnly ? list : list.slice(0, visibleCount);
     sliceToShow.forEach((book) => {
-      grid.appendChild(createBookCard(book));
+      const card = createBookCard(book);
+      card.setAttribute("draggable", "true");
+      grid.appendChild(card);
     });
     shop.renderAll();
   }
 
-  // 72: IntersectionObserver арқылы келесі бетті жүктеу
   if (!isFeaturedOnly && loadMoreSentinel) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -161,7 +169,6 @@ function initCatalog() {
     observer.observe(loadMoreSentinel);
   }
 
-  // 73: debounce іздеуге
   const handleDebouncedSearch = debounce((val) => {
     searchQuery = val;
     visibleCount = PAGE_SIZE;
@@ -190,14 +197,15 @@ function initCatalog() {
   });
 
   renderBooks();
+  initSalesChart(catalogBooks);
 
-  // 74: books.json-нан қайта жүктеу функциясы
   const fetchBooks = async () => {
     const loaded = await loadBooksFromJson(statusBox, fetchBooks);
     if (loaded) {
       catalogBooks = loaded;
       buildChips();
       renderBooks();
+      initSalesChart(catalogBooks);
     }
   };
   fetchBooks();
@@ -415,6 +423,7 @@ function initShopInteractions() {
     renderStep();
   }
 
+  initDragAndDropToCart((bookId) => shop.addToCart(bookId, 1));
   shop.renderAll();
 }
 
@@ -581,7 +590,6 @@ function initScrollReveal() {
   revealEls.forEach((el) => observer.observe(el));
 }
 
-// 73: throttle скроллына
 function initBackToTop() {
   const btn = document.querySelector("#back-to-top");
   if (!btn) return;
@@ -597,22 +605,29 @@ function initBackToTop() {
   });
 }
 
-initThemeToggle();
-initBurgerMenu();
-initCatalog();
-initBookModal();
-initShopInteractions();
-initContactForm();
-initFaqAccordion();
-initHeroSlider();
-initStatsCounter();
-initScrollReveal();
-initBackToTop();
-initOpenLibrarySearch();
+function bootAll() {
+  initAccessibilityHelpers();
+  initLanguageSwitcher();
+  initThemeToggle();
+  initBurgerMenu();
+  initCatalog();
+  initBookModal();
+  initShopInteractions();
+  initContactForm();
+  initFaqAccordion();
+  initHeroSlider();
+  initStatsCounter();
+  initScrollReveal();
+  initBackToTop();
+  initOpenLibrarySearch();
 
-// Если открыта страница book.html — грузим детали после попытки fetch books.json
-if (document.body.dataset.page === "book-detail") {
-  loadBooksFromJson(null).then((loaded) => {
-    initBookDetailPage(loaded || fallbackBooks);
-  });
+  if (document.body.dataset.page === "book-detail") {
+    loadBooksFromJson(null).then((loaded) => {
+      initBookDetailPage(loaded || fallbackBooks);
+    });
+  }
 }
+
+initSpaRouter();
+document.addEventListener("booknest:route-loaded", bootAll);
+bootAll();
