@@ -4,21 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Кітаптар каталогы — BookNest</title>
-  <meta name="description" content="BookNest кітап дүкенінің толық каталогы мен бағалары.">
+  <meta name="description" content="BookNest кітап дүкенінің интерактивті каталогы.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">BookNest</a>
-      <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
       <nav class="nav-menu" aria-label="Негізгі навигация">
         <ul class="nav-list">
           <li><a href="index.html">Басты бет</a></li>
@@ -27,74 +23,50 @@
           <li><a href="contact.html">Байланыс</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
+        <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="container section">
-    <h1>Кітаптар каталогы</h1>
-    <p>Төменде дүкеніміздегі қолжетімді кітаптар тізімі берілген.</p>
+    <h1 class="section-title">Кітаптар каталогы</h1>
 
-    <table class="books-table">
-      <thead>
-        <tr>
-          <th>Атауы</th>
-          <th>Автор</th>
-          <th>Жылы</th>
-          <th>Баға</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Абай жолы (1-том)</td>
-          <td>Мұхтар Әуезов</td>
-          <td>1942</td>
-          <td>4 500 ₸</td>
-        </tr>
-        <tr>
-          <td>1984</td>
-          <td>Джордж Оруэлл</td>
-          <td>1949</td>
-          <td>3 800 ₸</td>
-        </tr>
-        <tr>
-          <td>Атомдық әдеттер</td>
-          <td>Джеймс Клир</td>
-          <td>2018</td>
-          <td>5 200 ₸</td>
-        </tr>
-        <tr>
-          <td>Көшпенділер</td>
-          <td>Ілияс Есенберлин</td>
-          <td>1976</td>
-          <td>6 000 ₸</td>
-        </tr>
-        <tr>
-          <td>Кішкентай ханзада</td>
-          <td>Антуан де Сент-Экзюпери</td>
-          <td>1943</td>
-          <td>2 900 ₸</td>
-        </tr>
-        <tr>
-          <td>Дюна</td>
-          <td>Фрэнк Герберт</td>
-          <td>1965</td>
-          <td>5 900 ₸</td>
-        </tr>
-        <tr>
-          <td>Махаббат, қызық мол жылдар</td>
-          <td>Әзілхан Нұршайықов</td>
-          <td>1970</td>
-          <td>3 500 ₸</td>
-        </tr>
-        <tr>
-          <td>Sapiens: Адамзаттың қысқаша тарихы</td>
-          <td>Юваль Ной Харари</td>
-          <td>2011</td>
-          <td>6 400 ₸</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="catalog-controls">
+      <div class="catalog-top-bar">
+        <input type="search" id="search-input" class="search-input" placeholder="Кітап аты немесе автор бойынша іздеу...">
+        <select id="sort-select" class="sort-select" aria-label="Сұрыптау">
+          <option value="default">Әдепкі сұрыптау</option>
+          <option value="price-asc">Бағасы: арзаннан қымбатқа</option>
+          <option value="price-desc">Бағасы: қымбаттан арзанға</option>
+          <option value="rating-desc">Рейтинг бойынша</option>
+        </select>
+      </div>
+      <div id="genre-chips" class="genre-chips"></div>
+    </div>
+
+    <p id="results-count" class="results-count"></p>
+    <div id="books-grid" class="cards-grid"></div>
+
+    <div id="empty-state" class="empty-state" hidden>
+      <p>Сұранысыңыз бойынша ешқандай кітап табылмады.</p>
+      <button type="button" id="reset-filters-btn" class="btn">Сүзгілерді тазалау</button>
+    </div>
   </main>
+
+  <div id="book-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <button type="button" class="modal-close" aria-label="Жабу">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
 
   <footer class="site-footer">
     <div class="container footer-grid">
@@ -121,7 +93,7 @@
       </div>
     </div>
     <div class="container footer-bottom">
-      <p>& 2026 BookNest. Барлық құқықтар қорғалған.</p>
+      <p> 2026 BookNest. Барлық құқықтар қорғалған.</p>
     </div>
   </footer>
 </body>

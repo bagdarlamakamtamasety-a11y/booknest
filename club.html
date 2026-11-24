@@ -9,16 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">BookNest</a>
-      <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
       <nav class="nav-menu" aria-label="Негізгі навигация">
         <ul class="nav-list">
           <li><a href="index.html">Басты бет</a></li>
@@ -27,11 +23,19 @@
           <li><a href="contact.html">Байланыс</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
+        <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="container section">
-    <h1>BookNest оқу клубы</h1>
+    <h1 class="section-title">BookNest оқу клубы</h1>
     <p>Біздің клуб — кітап оқуды өмір салтына айналдырған жандардың қауымдастығы. Ай сайын бір таңдаулы шығарманы бірге оқып, онлайн және офлайн форматта пікір алмасамыз.</p>
 
     <h2>Клубқа қосылу қадамдары</h2>
@@ -52,7 +56,25 @@
       <dt>Тұрақтылық</dt>
       <dd>Кемінде айына бір рет өтетін қорытынды талқылауға белсенді қатысу құпталады.</dd>
     </dl>
+
+    <h2>Жиі қойылатын сұрақтар (FAQ)</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button type="button" class="faq-question" aria-expanded="false">Клубқа қатысу ақылы ма?</button>
+        <div class="faq-answer">Жоқ, BookNest оқу клубына мүше болу және кездесулерге қатысу толығымен тегін.</div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-question" aria-expanded="false">Кездесулер қай форматта өтеді?</button>
+        <div class="faq-answer">Айына екі рет Zoom арқылы онлайн және айына бір рет қала орталығындағы кофеханада офлайн өтеді.</div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-question" aria-expanded="false">Кітапты оқып үлгермесем қатысуға бола ма?</button>
+        <div class="faq-answer">Әрине! Бірақ кездесуде кітап мазмұны толық талқыланатындықтан спойлерлер болуы мүмкін екенін ескеріңіз.</div>
+      </div>
+    </div>
   </main>
+
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
 
   <footer class="site-footer">
     <div class="container footer-grid">

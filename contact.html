@@ -9,16 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">BookNest</a>
-      <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
       <nav class="nav-menu" aria-label="Негізгі навигация">
         <ul class="nav-list">
           <li><a href="index.html">Басты бет</a></li>
@@ -27,28 +23,37 @@
           <li><a href="contact.html" aria-current="page">Байланыс</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
+        <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="container section">
-    <h1>Бізбен байланысыңыз</h1>
+    <h1 class="section-title">Бізбен байланысыңыз</h1>
     <p>Сұрағыңыз болса немесе оқу клубына жазылғыңыз келсе, төмендегі форманы толтырыңыз.</p>
 
-    <form class="contact-form" action="#" method="post">
+    <form id="contact-form" class="contact-form" action="#" method="post" novalidate>
       <div class="form-group">
         <label for="name">Аты-жөніңіз</label>
-        <input type="text" id="name" name="name" placeholder="Мысалы: Айдос Серіков" required>
+        <input type="text" id="name" name="name" placeholder="Мысалы: Айдос Серіков">
+        <span id="name-error" class="field-error"></span>
       </div>
 
       <div class="form-group">
         <label for="email">Электрондық пошта (Email)</label>
-        <input type="email" id="email" name="email" placeholder="name@example.com" required>
+        <input type="email" id="email" name="email" placeholder="name@example.com">
+        <span id="email-error" class="field-error"></span>
       </div>
 
       <div class="form-group">
         <label for="topic">Тақырып</label>
-        <select id="topic" name="topic" required>
-          <option value="">Тақырыпты таңдаңыз...</option>
+        <select id="topic" name="topic">
           <option value="order">Кітапқа тапсырыс беру</option>
           <option value="club">Оқу клубына қосылу</option>
           <option value="partnership">Серіктестік</option>
@@ -58,12 +63,15 @@
 
       <div class="form-group">
         <label for="message">Хабарлама</label>
-        <textarea id="message" name="message" rows="5" placeholder="Хабарламаңызды осында жазыңыз..." required></textarea>
+        <textarea id="message" name="message" rows="5" placeholder="Хабарламаңызды осында жазыңыз..."></textarea>
+        <span id="message-error" class="field-error"></span>
       </div>
 
       <button type="submit" class="btn">Жіберу</button>
     </form>
   </main>
+
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
 
   <footer class="site-footer">
     <div class="container footer-grid">
