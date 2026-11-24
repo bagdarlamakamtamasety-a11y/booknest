@@ -19,6 +19,26 @@ import {
 let catalogBooks = [...fallbackBooks];
 const shop = new ShopManager();
 
+function syncActiveNavLink() {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const lastPart = pathParts[pathParts.length - 1] || "index.html";
+  const currentFile = lastPart.includes(".") ? lastPart : "index.html";
+  const links = document.querySelectorAll(".nav-list a");
+
+  links.forEach((link) => {
+    const hrefParts = (link.getAttribute("href") || "").split("/").filter(Boolean);
+    const hrefFile = hrefParts[hrefParts.length - 1] || "index.html";
+    const isCurrent = hrefFile === currentFile;
+
+    link.classList.toggle("active", isCurrent);
+    if (isCurrent) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
 function initThemeToggle() {
   const toggleBtn = document.querySelector(".theme-toggle");
   const savedTheme = localStorage.getItem("booknest-theme");
@@ -606,6 +626,7 @@ function initBackToTop() {
 }
 
 function bootAll() {
+  syncActiveNavLink();
   initAccessibilityHelpers();
   initLanguageSwitcher();
   initThemeToggle();
@@ -629,5 +650,6 @@ function bootAll() {
 }
 
 initSpaRouter();
+window.addEventListener("popstate", syncActiveNavLink);
 document.addEventListener("booknest:route-loaded", bootAll);
 bootAll();
