@@ -1,9 +1,34 @@
 import { books } from "./data.js";
 import { createBookCard, formatPrice, showToast } from "./ui.js";
+import { ShopManager, validateCheckoutFields } from "./cart-checkout.js";
 
-console.log("BookNest JS жүктелді. Кітаптар саны:", books.length);
+const shop = new ShopManager();
 
-// 44. Гамбургер мәзір
+function initThemeToggle() {
+  const toggleBtn = document.querySelector(".theme-toggle");
+  const savedTheme = localStorage.getItem("booknest-theme");
+
+  if (savedTheme === "dark") {
+    document.documentElement.classList.add("dark");
+  }
+
+  const updateIcon = () => {
+    if (!toggleBtn) return;
+    const isDark = document.documentElement.classList.contains("dark");
+    toggleBtn.textContent = isDark ? "☀️" : "🌙";
+    toggleBtn.setAttribute("aria-label", isDark ? "Ашық тақырып" : "Қараңғы тақырып");
+  };
+
+  updateIcon();
+
+  toggleBtn?.addEventListener("click", () => {
+    document.documentElement.classList.toggle("dark");
+    const isDark = document.documentElement.classList.contains("dark");
+    localStorage.setItem("booknest-theme", isDark ? "dark" : "light");
+    updateIcon();
+  });
+}
+
 function initBurgerMenu() {
   const burgerBtn = document.querySelector(".burger-btn");
   const navMenu = document.querySelector(".nav-menu");
@@ -31,35 +56,6 @@ function initBurgerMenu() {
   });
 }
 
-// 45. Қараңғы/ашық тақырып (localStorage)
-function initThemeToggle() {
-  const toggleBtn = document.querySelector(".theme-toggle");
-  const savedTheme = localStorage.getItem("booknest-theme");
-
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark");
-  }
-
-  const updateIcon = () => {
-    if (!toggleBtn) return;
-    const isDark = document.documentElement.classList.contains("dark");
-    toggleBtn.textContent = isDark ? "☀️" : "🌙";
-    toggleBtn.setAttribute("aria-label", isDark ? "Ашық тақырып" : "Қараңғы тақырып");
-  };
-
-  updateIcon();
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
-      const isDark = document.documentElement.classList.contains("dark");
-      localStorage.setItem("booknest-theme", isDark ? "dark" : "light");
-      updateIcon();
-    });
-  }
-}
-
-// 43, 46, 47, 48, 49. Каталог: рендер, іздеу, сүзгі, сұрыптау, нәтиже саны
 function initCatalog() {
   const grid = document.querySelector("#books-grid");
   if (!grid) return;
@@ -123,6 +119,7 @@ function initCatalog() {
 
     if (list.length === 0) {
       if (emptyState) emptyState.hidden = false;
+      shop.renderAll();
       return;
     }
 
@@ -130,42 +127,34 @@ function initCatalog() {
     list.forEach((book) => {
       grid.appendChild(createBookCard(book));
     });
+    shop.renderAll();
   }
 
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      searchQuery = e.target.value;
-      renderBooks();
-    });
-  }
+  searchInput?.addEventListener("input", (e) => {
+    searchQuery = e.target.value;
+    renderBooks();
+  });
 
-  if (sortSelect) {
-    sortSelect.addEventListener("change", (e) => {
-      sortBy = e.target.value;
-      renderBooks();
-    });
-  }
+  sortSelect?.addEventListener("change", (e) => {
+    sortBy = e.target.value;
+    renderBooks();
+  });
 
-  if (resetFiltersBtn) {
-    resetFiltersBtn.addEventListener("click", () => {
-      searchQuery = "";
-      selectedGenre = "Барлығы";
-      sortBy = "default";
-      if (searchInput) searchInput.value = "";
-      if (sortSelect) sortSelect.value = "default";
-      if (genreChipsContainer) {
-        genreChipsContainer.querySelectorAll(".chip").forEach((c) => {
-          c.classList.toggle("is-active", c.dataset.genre === "Барлығы");
-        });
-      }
-      renderBooks();
+  resetFiltersBtn?.addEventListener("click", () => {
+    searchQuery = "";
+    selectedGenre = "Барлығы";
+    sortBy = "default";
+    if (searchInput) searchInput.value = "";
+    if (sortSelect) sortSelect.value = "default";
+    genreChipsContainer?.querySelectorAll(".chip").forEach((c) => {
+      c.classList.toggle("is-active", c.dataset.genre === "Барлығы");
     });
-  }
+    renderBooks();
+  });
 
   renderBooks();
 }
 
-// 50, 51. Модальды терезе және фокус басқару
 function initBookModal() {
   const modal = document.querySelector("#book-modal");
   if (!modal) return;
@@ -186,23 +175,23 @@ function initBookModal() {
           <p class="rating">${book.rating.toFixed(1)} / 5.0</p>
           <p class="modal-desc">${book.description}</p>
           <p class="price">${formatPrice(book.price)}</p>
+          <button type="button" class="btn" data-add-cart="${book.id}">Себетке қосу</button>
         </div>
       </div>
     `;
     modal.hidden = false;
     document.body.style.overflow = "hidden";
-    closeBtn.focus();
+    closeBtn?.focus();
   }
 
   function closeModal() {
     modal.hidden = true;
     document.body.style.overflow = "";
-    if (lastFocusedElement) {
-      lastFocusedElement.focus();
-    }
+    lastFocusedElement?.focus();
   }
 
   document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-add-cart]") || e.target.closest("[data-wish-btn]")) return;
     const card = e.target.closest(".card[data-id]");
     if (card) {
       const book = books.find((b) => b.id === Number(card.dataset.id));
@@ -210,20 +199,170 @@ function initBookModal() {
     }
   });
 
-  closeBtn.addEventListener("click", closeModal);
-
+  closeBtn?.addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => {
     if (e.target === modal) closeModal();
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.hidden) {
-      closeModal();
-    }
+    if (e.key === "Escape" && !modal.hidden) closeModal();
   });
 }
 
-// 52, 53. Байланыс формасының валидациясы және toast
+function initShopInteractions() {
+  document.addEventListener("click", (e) => {
+    const addBtn = e.target.closest("[data-add-cart]");
+    if (addBtn) {
+      e.stopPropagation();
+      shop.addToCart(addBtn.dataset.addCart, 1);
+      return;
+    }
+
+    const wishBtn = e.target.closest("[data-wish-btn]");
+    if (wishBtn) {
+      e.stopPropagation();
+      shop.toggleWishlist(wishBtn.dataset.wishBtn);
+      return;
+    }
+
+    const repeatBtn = e.target.closest(".repeat-order-btn");
+    if (repeatBtn) {
+      shop.repeatOrder(repeatBtn.dataset.orderId);
+    }
+  });
+
+  const drawer = document.querySelector("#cart-drawer");
+  const openBtns = document.querySelectorAll("[data-open-cart]");
+  const closeBtn = drawer?.querySelector(".drawer-close");
+
+  if (drawer) {
+    let prevFocused = null;
+
+    const openDrawer = () => {
+      prevFocused = document.activeElement;
+      drawer.hidden = false;
+      document.body.style.overflow = "hidden";
+      closeBtn?.focus();
+      shop.renderAll();
+    };
+
+    const closeDrawer = () => {
+      drawer.hidden = true;
+      document.body.style.overflow = "";
+      prevFocused?.focus();
+    };
+
+    openBtns.forEach((b) => b.addEventListener("click", openDrawer));
+    closeBtn?.addEventListener("click", closeDrawer);
+
+    drawer.addEventListener("click", (e) => {
+      if (e.target === drawer) closeDrawer();
+
+      const inc = e.target.closest(".qty-inc");
+      const dec = e.target.closest(".qty-dec");
+      const rem = e.target.closest(".qty-rem");
+      if (inc) shop.updateQty(inc.dataset.id, 1);
+      if (dec) shop.updateQty(dec.dataset.id, -1);
+      if (rem) shop.removeFromCart(rem.dataset.id);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !drawer.hidden) closeDrawer();
+    });
+
+    // Промокод (задание 64)
+    const promoForm = drawer.querySelector("#promo-form");
+    const promoMsg = drawer.querySelector("#promo-message");
+    promoForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = promoForm.querySelector("#promo-input");
+      const res = shop.applyPromo(input.value);
+      if (promoMsg) {
+        promoMsg.textContent = res.message;
+        promoMsg.style.color = res.ok ? "var(--color-primary)" : "var(--color-error)";
+      }
+      if (res.ok) input.value = "";
+    });
+
+    // Многошаговое оформление заказа (задания 65-66)
+    let step = 1;
+    const stepPanels = drawer.querySelectorAll("[data-step-panel]");
+    const progressEl = drawer.querySelector("#checkout-progress");
+    const errorEl = drawer.querySelector("#checkout-error");
+    const phoneInput = drawer.querySelector("#order-phone");
+    const addressInput = drawer.querySelector("#order-address");
+    const cardInput = drawer.querySelector("#order-card");
+    const confirmSummary = drawer.querySelector("#confirm-summary");
+
+    const renderStep = () => {
+      stepPanels.forEach((p) => {
+        p.hidden = Number(p.dataset.stepPanel) !== step;
+      });
+      if (progressEl) progressEl.textContent = `Қадам ${step} / 3`;
+      if (errorEl) errorEl.textContent = "";
+      if (step === 3 && confirmSummary) {
+        const totals = shop.getTotals();
+        confirmSummary.textContent = `Телефон: ${phoneInput?.value}, Мекенжай: ${addressInput?.value}, Сомасы: ${formatPrice(totals.total)}`;
+      }
+    };
+
+    drawer.querySelector("#step1-next")?.addEventListener("click", () => {
+      const errs = validateCheckoutFields({
+        phone: phoneInput?.value,
+        address: addressInput?.value,
+        card: "4532015112830366"
+      });
+      if (errs.phone || errs.address) {
+        if (errorEl) errorEl.textContent = errs.phone || errs.address;
+        return;
+      }
+      step = 2;
+      renderStep();
+    });
+
+    drawer.querySelector("#step2-back")?.addEventListener("click", () => {
+      step = 1;
+      renderStep();
+    });
+
+    drawer.querySelector("#step2-next")?.addEventListener("click", () => {
+      const errs = validateCheckoutFields({
+        phone: phoneInput?.value,
+        address: addressInput?.value,
+        card: cardInput?.value
+      });
+      if (errs.card) {
+        if (errorEl) errorEl.textContent = errs.card;
+        return;
+      }
+      step = 3;
+      renderStep();
+    });
+
+    drawer.querySelector("#step3-back")?.addEventListener("click", () => {
+      step = 2;
+      renderStep();
+    });
+
+    drawer.querySelector("#step3-submit")?.addEventListener("click", () => {
+      const order = shop.createOrder({
+        phone: phoneInput?.value,
+        address: addressInput?.value
+      });
+      if (phoneInput) phoneInput.value = "";
+      if (addressInput) addressInput.value = "";
+      if (cardInput) cardInput.value = "";
+      step = 1;
+      renderStep();
+      showToast(`Тапсырыс #${order.id} қабылданды!`);
+    });
+
+    renderStep();
+  }
+
+  shop.renderAll();
+}
+
 function initContactForm() {
   const form = document.querySelector("#contact-form");
   if (!form) return;
@@ -231,7 +370,6 @@ function initContactForm() {
   const nameInput = form.querySelector("#name");
   const emailInput = form.querySelector("#email");
   const messageInput = form.querySelector("#message");
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function setError(input, message) {
@@ -272,19 +410,18 @@ function initContactForm() {
   });
 }
 
-// 54. FAQ аккордеон
 function initFaqAccordion() {
   const faqItems = document.querySelectorAll(".faq-item");
   if (!faqItems.length) return;
 
   faqItems.forEach((item) => {
     const btn = item.querySelector(".faq-question");
-    btn.addEventListener("click", () => {
+    btn?.addEventListener("click", () => {
       const isAlreadyOpen = item.classList.contains("is-open");
 
       faqItems.forEach((other) => {
         other.classList.remove("is-open");
-        other.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+        other.querySelector(".faq-question")?.setAttribute("aria-expanded", "false");
       });
 
       if (!isAlreadyOpen) {
@@ -295,7 +432,6 @@ function initFaqAccordion() {
   });
 }
 
-// 55. Hero слайдер (3 слайд, автоматты ауысу, hover-де тоқтау)
 function initHeroSlider() {
   const slider = document.querySelector(".hero-slider");
   if (!slider) return;
@@ -322,8 +458,8 @@ function initHeroSlider() {
     if (intervalId) clearInterval(intervalId);
   }
 
-  prevBtn.addEventListener("click", () => showSlide(current - 1));
-  nextBtn.addEventListener("click", () => showSlide(current + 1));
+  prevBtn?.addEventListener("click", () => showSlide(current - 1));
+  nextBtn?.addEventListener("click", () => showSlide(current + 1));
   dots.forEach((dot, i) => dot.addEventListener("click", () => showSlide(i)));
 
   slider.addEventListener("mouseenter", stopAutoPlay);
@@ -332,7 +468,6 @@ function initHeroSlider() {
   startAutoPlay();
 }
 
-// 56. Статистика санауыштары (IntersectionObserver)
 function initStatsCounter() {
   const statsSection = document.querySelector(".stats-section");
   if (!statsSection) return;
@@ -372,7 +507,6 @@ function initStatsCounter() {
   observer.observe(statsSection);
 }
 
-// 57. Scroll reveal
 function initScrollReveal() {
   const revealEls = document.querySelectorAll(".reveal");
   if (!revealEls.length) return;
@@ -392,7 +526,6 @@ function initScrollReveal() {
   revealEls.forEach((el) => observer.observe(el));
 }
 
-// 58. «Жоғарыға» батырмасы (300px)
 function initBackToTop() {
   const btn = document.querySelector("#back-to-top");
   if (!btn) return;
@@ -406,11 +539,11 @@ function initBackToTop() {
   });
 }
 
-// Іске қосу
-initBurgerMenu();
 initThemeToggle();
+initBurgerMenu();
 initCatalog();
 initBookModal();
+initShopInteractions();
 initContactForm();
 initFaqAccordion();
 initHeroSlider();

@@ -1,5 +1,5 @@
 export function formatPrice(price) {
-  return `${price.toLocaleString("kk-KZ")} ₸`;
+  return `${Number(price).toLocaleString("kk-KZ")} ₸`;
 }
 
 export function createBookCard(book) {
@@ -15,7 +15,10 @@ export function createBookCard(book) {
     <p class="author">${book.author} · ${book.genre}</p>
     <p class="rating">${book.rating.toFixed(1)}</p>
     <p class="price">${formatPrice(book.price)}</p>
-    <button type="button" class="btn-outline card-details-btn">Толығырақ</button>
+    <div class="card-actions">
+      <button type="button" class="btn add-to-cart-btn" data-add-cart="${book.id}">Себетке</button>
+      <button type="button" class="wish-btn" data-wish-btn="${book.id}" aria-label="Таңдаулыларға қосу" aria-pressed="false">♡</button>
+    </div>
   `;
 
   return article;

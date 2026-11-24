@@ -24,6 +24,8 @@
         </ul>
       </nav>
       <div class="header-actions">
+        <span class="wish-counter" title="Таңдаулылар">♡ <strong data-wishlist-count>0</strong></span>
+        <button type="button" class="btn-outline" data-open-cart>Себет (<strong data-cart-count>0</strong>)</button>
         <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
         <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
           <span></span>
@@ -57,6 +59,11 @@
       <p>Сұранысыңыз бойынша ешқандай кітап табылмады.</p>
       <button type="button" id="reset-filters-btn" class="btn">Сүзгілерді тазалау</button>
     </div>
+
+    <section class="section">
+      <h2 class="section-title">Тапсырыстар тарихы</h2>
+      <div id="orders-history"></div>
+    </section>
   </main>
 
   <div id="book-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -65,6 +72,62 @@
       <div id="modal-body"></div>
     </div>
   </div>
+
+  <aside id="cart-drawer" class="drawer-backdrop" hidden role="dialog" aria-modal="true" aria-label="Себет">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2>Себет</h2>
+        <button type="button" class="drawer-close" aria-label="Жабу">&times;</button>
+      </div>
+
+      <div id="cart-drawer-items" class="drawer-items"></div>
+
+      <form id="promo-form" class="promo-form">
+        <input type="text" id="promo-input" placeholder="Промокод (BOOK10, MINUS1500, FREEDEL)">
+        <button type="submit" class="btn-outline">Қолдану</button>
+      </form>
+      <p id="promo-message" class="promo-message"></p>
+
+      <div id="cart-drawer-summary" class="drawer-summary"></div>
+
+      <div id="checkout-steps-box" class="checkout-box">
+        <h3>Тапсырысты рәсімдеу</h3>
+        <p id="checkout-progress" class="muted">Қадам 1 / 3</p>
+        <p id="checkout-error" class="field-error"></p>
+
+        <div data-step-panel="1">
+          <div class="form-group">
+            <label for="order-phone">Телефон (+7 XXX XXX XX XX)</label>
+            <input type="text" id="order-phone" placeholder="+7 701 123 45 67">
+          </div>
+          <div class="form-group">
+            <label for="order-address">Жеткізу мекенжайы</label>
+            <input type="text" id="order-address" placeholder="Ақтау қ., 14-шағынаудан, 25-үй">
+          </div>
+          <button type="button" id="step1-next" class="btn">Келесі: Төлем</button>
+        </div>
+
+        <div data-step-panel="2" hidden>
+          <div class="form-group">
+            <label for="order-card">Карта нөмірі (Luhn тексерісі)</label>
+            <input type="text" id="order-card" placeholder="4532 0151 1283 0366">
+          </div>
+          <div class="card-actions">
+            <button type="button" id="step2-back" class="btn-outline">Артқа</button>
+            <button type="button" id="step2-next" class="btn">Келесі: Растау</button>
+          </div>
+        </div>
+
+        <div data-step-panel="3" hidden>
+          <p id="confirm-summary"></p>
+          <div class="card-actions">
+            <button type="button" id="step3-back" class="btn-outline">Артқа</button>
+            <button type="button" id="step3-submit" class="btn">Тапсырысты растау</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
 
