@@ -1,7 +1,15 @@
-import { books } from "./data.js";
+import { books as fallbackBooks } from "./data.js";
 import { createBookCard, formatPrice, showToast } from "./ui.js";
 import { ShopManager, validateCheckoutFields } from "./cart-checkout.js";
+import {
+  debounce,
+  throttle,
+  loadBooksFromJson,
+  initBookDetailPage,
+  initOpenLibrarySearch
+} from "./advanced-features.js";
 
+let catalogBooks = [...fallbackBooks];
 const shop = new ShopManager();
 
 function initThemeToggle() {
@@ -67,32 +75,40 @@ function initCatalog() {
   const resultsCount = document.querySelector("#results-count");
   const emptyState = document.querySelector("#empty-state");
   const resetFiltersBtn = document.querySelector("#reset-filters-btn");
+  const statusBox = document.querySelector("#catalog-status");
+  const loadMoreSentinel = document.querySelector("#load-more-sentinel");
 
   let searchQuery = "";
   let selectedGenre = "Барлығы";
   let sortBy = "default";
+  const PAGE_SIZE = 6;
+  let visibleCount = PAGE_SIZE;
 
-  if (genreChipsContainer) {
-    const genres = ["Барлығы", ...new Set(books.map((b) => b.genre))];
+  function buildChips() {
+    if (!genreChipsContainer) return;
+    const genres = ["Барлығы", ...new Set(catalogBooks.map((b) => b.genre))];
     genreChipsContainer.innerHTML = genres
       .map(
         (genre) =>
-          `<button type="button" class="chip ${genre === "Барлығы" ? "is-active" : ""}" data-genre="${genre}">${genre}</button>`
+          `<button type="button" class="chip ${genre === selectedGenre ? "is-active" : ""}" data-genre="${genre}">${genre}</button>`
       )
       .join("");
-
-    genreChipsContainer.addEventListener("click", (e) => {
-      const btn = e.target.closest(".chip");
-      if (!btn) return;
-      selectedGenre = btn.dataset.genre;
-      genreChipsContainer.querySelectorAll(".chip").forEach((c) => c.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      renderBooks();
-    });
   }
 
+  buildChips();
+
+  genreChipsContainer?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip");
+    if (!btn) return;
+    selectedGenre = btn.dataset.genre;
+    visibleCount = PAGE_SIZE;
+    genreChipsContainer.querySelectorAll(".chip").forEach((c) => c.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    renderBooks();
+  });
+
   function renderBooks() {
-    let list = isFeaturedOnly ? books.slice(0, 4) : [...books];
+    let list = isFeaturedOnly ? catalogBooks.slice(0, 4) : [...catalogBooks];
 
     if (!isFeaturedOnly) {
       if (selectedGenre !== "Барлығы") {
@@ -124,19 +140,41 @@ function initCatalog() {
     }
 
     if (emptyState) emptyState.hidden = true;
-    list.forEach((book) => {
+    const sliceToShow = isFeaturedOnly ? list : list.slice(0, visibleCount);
+    sliceToShow.forEach((book) => {
       grid.appendChild(createBookCard(book));
     });
     shop.renderAll();
   }
 
-  searchInput?.addEventListener("input", (e) => {
-    searchQuery = e.target.value;
+  // 72: IntersectionObserver арқылы келесі бетті жүктеу
+  if (!isFeaturedOnly && loadMoreSentinel) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          visibleCount += PAGE_SIZE;
+          renderBooks();
+        }
+      },
+      { rootMargin: "120px" }
+    );
+    observer.observe(loadMoreSentinel);
+  }
+
+  // 73: debounce іздеуге
+  const handleDebouncedSearch = debounce((val) => {
+    searchQuery = val;
+    visibleCount = PAGE_SIZE;
     renderBooks();
+  }, 250);
+
+  searchInput?.addEventListener("input", (e) => {
+    handleDebouncedSearch(e.target.value);
   });
 
   sortSelect?.addEventListener("change", (e) => {
     sortBy = e.target.value;
+    visibleCount = PAGE_SIZE;
     renderBooks();
   });
 
@@ -144,15 +182,25 @@ function initCatalog() {
     searchQuery = "";
     selectedGenre = "Барлығы";
     sortBy = "default";
+    visibleCount = PAGE_SIZE;
     if (searchInput) searchInput.value = "";
     if (sortSelect) sortSelect.value = "default";
-    genreChipsContainer?.querySelectorAll(".chip").forEach((c) => {
-      c.classList.toggle("is-active", c.dataset.genre === "Барлығы");
-    });
+    buildChips();
     renderBooks();
   });
 
   renderBooks();
+
+  // 74: books.json-нан қайта жүктеу функциясы
+  const fetchBooks = async () => {
+    const loaded = await loadBooksFromJson(statusBox, fetchBooks);
+    if (loaded) {
+      catalogBooks = loaded;
+      buildChips();
+      renderBooks();
+    }
+  };
+  fetchBooks();
 }
 
 function initBookModal() {
@@ -172,10 +220,13 @@ function initBookModal() {
           <span class="modal-genre">${book.genre} · ${book.year} ж.</span>
           <h2 id="modal-title">${book.title}</h2>
           <p class="author">Авторы: <strong>${book.author}</strong></p>
-          <p class="rating">${book.rating.toFixed(1)} / 5.0</p>
+          <p class="rating">${Number(book.rating).toFixed(1)} / 5.0</p>
           <p class="modal-desc">${book.description}</p>
           <p class="price">${formatPrice(book.price)}</p>
-          <button type="button" class="btn" data-add-cart="${book.id}">Себетке қосу</button>
+          <div class="card-actions">
+            <button type="button" class="btn" data-add-cart="${book.id}">Себетке қосу</button>
+            <a href="book.html?id=${book.id}" class="btn-outline">Толық бет</a>
+          </div>
         </div>
       </div>
     `;
@@ -191,10 +242,16 @@ function initBookModal() {
   }
 
   document.addEventListener("click", (e) => {
-    if (e.target.closest("[data-add-cart]") || e.target.closest("[data-wish-btn]")) return;
+    if (
+      e.target.closest("[data-add-cart]") ||
+      e.target.closest("[data-wish-btn]") ||
+      e.target.closest(".card-link")
+    ) {
+      return;
+    }
     const card = e.target.closest(".card[data-id]");
     if (card) {
-      const book = books.find((b) => b.id === Number(card.dataset.id));
+      const book = catalogBooks.find((b) => b.id === Number(card.dataset.id));
       if (book) openModal(book);
     }
   });
@@ -270,7 +327,6 @@ function initShopInteractions() {
       if (e.key === "Escape" && !drawer.hidden) closeDrawer();
     });
 
-    // Промокод (задание 64)
     const promoForm = drawer.querySelector("#promo-form");
     const promoMsg = drawer.querySelector("#promo-message");
     promoForm?.addEventListener("submit", (e) => {
@@ -284,7 +340,6 @@ function initShopInteractions() {
       if (res.ok) input.value = "";
     });
 
-    // Многошаговое оформление заказа (задания 65-66)
     let step = 1;
     const stepPanels = drawer.querySelectorAll("[data-step-panel]");
     const progressEl = drawer.querySelector("#checkout-progress");
@@ -526,13 +581,16 @@ function initScrollReveal() {
   revealEls.forEach((el) => observer.observe(el));
 }
 
+// 73: throttle скроллына
 function initBackToTop() {
   const btn = document.querySelector("#back-to-top");
   if (!btn) return;
 
-  window.addEventListener("scroll", () => {
+  const onScroll = throttle(() => {
     btn.classList.toggle("is-visible", window.scrollY > 300);
-  });
+  }, 150);
+
+  window.addEventListener("scroll", onScroll);
 
   btn.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -550,3 +608,11 @@ initHeroSlider();
 initStatsCounter();
 initScrollReveal();
 initBackToTop();
+initOpenLibrarySearch();
+
+// Если открыта страница book.html — грузим детали после попытки fetch books.json
+if (document.body.dataset.page === "book-detail") {
+  loadBooksFromJson(null).then((loaded) => {
+    initBookDetailPage(loaded || fallbackBooks);
+  });
+}

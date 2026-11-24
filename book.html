@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кітап туралы — BookNest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="book-detail">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">BookNest</a>
+      <nav class="nav-menu" aria-label="Негізгі навигация">
+        <ul class="nav-list">
+          <li><a href="index.html">Басты бет</a></li>
+          <li><a href="books.html">Каталог</a></li>
+          <li><a href="club.html">Оқу клубы</a></li>
+          <li><a href="contact.html">Байланыс</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <span class="wish-counter" title="Таңдаулылар">♡ <strong data-wishlist-count>0</strong></span>
+        <button type="button" class="btn-outline" data-open-cart>Себет (<strong data-cart-count>0</strong>)</button>
+        <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
+        <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section">
+    <div id="book-detail-container"></div>
+
+    <section id="reviews-section" class="section" hidden>
+      <h2 class="section-title">Рейтинг және пікірлер</h2>
+      <div id="rating-breakdown" class="rating-breakdown"></div>
+
+      <form id="review-form" class="contact-form">
+        <div class="form-group">
+          <label for="reviewer-name">Атыңыз</label>
+          <input type="text" id="reviewer-name" required placeholder="Атыңыз">
+        </div>
+        <div class="form-group">
+          <label for="review-stars">Баға (1–5 жұлдыз)</label>
+          <select id="review-stars">
+            <option value="5">5 жұлдыз</option>
+            <option value="4">4 жұлдыз</option>
+            <option value="3">3 жұлдыз</option>
+            <option value="2">2 жұлдыз</option>
+            <option value="1">1 жұлдыз</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="review-text">Пікіріңіз</label>
+          <textarea id="review-text" rows="3" required placeholder="Кітап туралы ойыңыз..."></textarea>
+        </div>
+        <button type="submit" class="btn">Пікір қалдыру</button>
+      </form>
+      <p id="review-message" class="muted"></p>
+      <div id="reviews-list" class="reviews-list"></div>
+    </section>
+
+    <section id="similar-section" class="section" hidden>
+      <h2 class="section-title">Ұқсас кітаптар</h2>
+      <div id="similar-books-grid" class="cards-grid"></div>
+    </section>
+  </main>
+
+  <aside id="cart-drawer" class="drawer-backdrop" hidden role="dialog" aria-modal="true" aria-label="Себет">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2>Себет</h2>
+        <button type="button" class="drawer-close" aria-label="Жабу">&times;</button>
+      </div>
+      <div id="cart-drawer-items" class="drawer-items"></div>
+      <div id="cart-drawer-summary" class="drawer-summary"></div>
+    </div>
+  </aside>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>Біз туралы</h3>
+        <p>BookNest — кітапсүйер қауымды біріктіретін заманауи онлайн дүкен және оқу клубы.</p>
+      </div>
+      <div>
+        <h3>Сілтемелер</h3>
+        <ul>
+          <li><a href="index.html">Басты бет</a></li>
+          <li><a href="books.html">Каталог</a></li>
+          <li><a href="club.html">Оқу клубы</a></li>
+          <li><a href="contact.html">Байланыс</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Байланыс</h3>
+        <ul>
+          <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://t.me" target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href="mailto:info@booknest.kz">info@booknest.kz</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p> 2026 BookNest. Барлық құқықтар қорғалған.</p>
+    </div>
+  </footer>
+</body>
+</html>
