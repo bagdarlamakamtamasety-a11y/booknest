@@ -8,7 +8,14 @@ const ORDERS_KEY = "booknest_orders_v1";
 
 function getAllBooks() {
   const custom = typeof getCustomBooks === "function" ? getCustomBooks() : [];
-  return [...custom, ...fallbackBooks];
+  const combined = [...custom, ...fallbackBooks];
+  const seen = new Set();
+  return combined.filter((b) => {
+    const id = Number(b.id);
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 }
 
 function readJson(key, fallback) {
@@ -47,8 +54,7 @@ function isValidLuhn(numStr) {
 
 function ensureAdminNavLink() {
   document.querySelectorAll(".nav-list").forEach((navList) => {
-    const hasAdmin = navList.querySelector('a[href$="admin.html"]');
-    if (!hasAdmin) {
+    if (!navList.querySelector('a[href$="admin.html"]')) {
       const li = document.createElement("li");
       li.innerHTML = `<a href="admin.html">Админ</a>`;
       navList.appendChild(li);
@@ -56,9 +62,8 @@ function ensureAdminNavLink() {
   });
 }
 
-function decorateCardsWithLikeButtons() {
-  const wishlist = readJson(WISH_KEY, []).map(Number);
-  const wishSet = new Set(wishlist);
+function syncLikeButtonsUI(wishlist) {
+  const wishSet = new Set(wishlist.map(Number));
 
   document.querySelectorAll(".card[data-id]").forEach((card) => {
     const bookId = Number(card.dataset.id);
@@ -81,12 +86,31 @@ function decorateCardsWithLikeButtons() {
     wishBtn.setAttribute("aria-pressed", String(liked));
   });
 
+  document.querySelectorAll("[data-wish-btn]").forEach((btn) => {
+    const id = Number(btn.dataset.wishBtn);
+    if (!id) return;
+    const liked = wishSet.has(id);
+    btn.textContent = liked ? "♥" : "♡";
+    btn.classList.toggle("is-liked", liked);
+    btn.setAttribute("aria-pressed", String(liked));
+  });
+
   document.querySelectorAll("[data-wish-count]").forEach((el) => {
     el.textContent = String(wishlist.length);
   });
 }
 
+let isInitialized = false;
+
 export function initCartAndLikes() {
+  ensureAdminNavLink();
+
+  if (isInitialized) {
+    syncLikeButtonsUI(readJson(WISH_KEY, []));
+    return;
+  }
+  isInitialized = true;
+
   let cart = readJson(CART_KEY, []);
   let wishlist = readJson(WISH_KEY, []);
   let discountRate = 0;
@@ -182,28 +206,34 @@ export function initCartAndLikes() {
     }
 
     ensureAdminNavLink();
-    decorateCardsWithLikeButtons();
+    syncLikeButtonsUI(wishlist);
     renderOrders();
   };
 
   const addBookToCart = (id) => {
-    const book = getAllBooks().find((b) => Number(b.id) === Number(id));
-    if (!book) return;
-    const existing = cart.find((item) => Number(item.id) === Number(id));
+    const numId = Number(id);
+    if (!numId) return;
+    const book = getAllBooks().find((b) => Number(b.id) === numId);
+    const title = book ? book.title : `Кітап #${numId}`;
+    const price = book ? Number(book.price) : 0;
+
+    const existing = cart.find((item) => Number(item.id) === numId);
     if (existing) {
       existing.qty = (Number(existing.qty) || 1) + 1;
+      if (price > 0) existing.price = price;
     } else {
-      cart.push({ id: book.id, title: book.title, price: book.price, qty: 1 });
+      cart.push({ id: numId, title, price, qty: 1 });
     }
     saveCart();
     renderCart();
-    showToast(`«${book.title}» себетке қосылды`);
+    showToast(`«${title}» себетке қосылды`);
   };
 
   const toggleLike = (id) => {
     const numId = Number(id);
     if (!numId) return;
-    if (wishlist.map(Number).includes(numId)) {
+    const exists = wishlist.map(Number).includes(numId);
+    if (exists) {
       wishlist = wishlist.filter((x) => Number(x) !== numId);
       showToast("Таңдаулылардан алынды");
     } else {
@@ -211,7 +241,7 @@ export function initCartAndLikes() {
       showToast("Таңдаулыларға қосылды ♥");
     }
     saveWish();
-    decorateCardsWithLikeButtons();
+    syncLikeButtonsUI(wishlist);
   };
 
   document.addEventListener("click", (e) => {
@@ -352,7 +382,7 @@ export function initCartAndLikes() {
 
   const observer = new MutationObserver(() => {
     ensureAdminNavLink();
-    decorateCardsWithLikeButtons();
+    syncLikeButtonsUI(wishlist);
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
