@@ -17,13 +17,20 @@
       <a href="index.html" class="logo">BookNest</a>
       <nav class="nav-menu" aria-label="Негізгі навигация">
         <ul class="nav-list">
-          <li><a href="index.html" aria-current="page">Басты бет</a></li>
+          <li><a href="index.html" class="active" aria-current="page">Басты бет</a></li>
           <li><a href="books.html">Каталог</a></li>
           <li><a href="club.html">Оқу клубы</a></li>
           <li><a href="contact.html">Байланыс</a></li>
         </ul>
       </nav>
       <div class="header-actions">
+        <select id="lang-select" class="lang-select" aria-label="Тілді таңдау">
+          <option value="kk">KK</option>
+          <option value="ru">RU</option>
+          <option value="en">EN</option>
+        </select>
+        <span class="wish-counter" title="Таңдаулылар">♡ <strong data-wishlist-count>0</strong></span>
+        <button type="button" class="btn-outline" data-open-cart>Себет (<strong data-cart-count>0</strong>)</button>
         <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
         <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
           <span></span>
@@ -67,6 +74,7 @@
 
     <section class="section container reveal">
       <h2 class="section-title">Танымал кітаптар</h2>
+      <div id="cart-drop-zone" class="drop-zone">Кітап карточкасын осы жерге сүйреп апарыңыз (Себетке)</div>
       <div id="books-grid" class="cards-grid" data-featured="true"></div>
     </section>
 
@@ -103,10 +111,66 @@
 
   <div id="book-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-dialog">
-      <button type="button" class="modal-close" aria-label="Жабу">&times;</button>
+      <button type="button" class="modal-close" aria-label="Жабу"></button>
       <div id="modal-body"></div>
     </div>
   </div>
+
+  <aside id="cart-drawer" class="drawer-backdrop" hidden role="dialog" aria-modal="true" aria-label="Себет">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2>Себет</h2>
+        <button type="button" class="drawer-close" aria-label="Жабу"></button>
+      </div>
+
+      <div id="cart-drawer-items" class="drawer-items"></div>
+
+      <form id="promo-form" class="promo-form">
+        <input type="text" id="promo-input" placeholder="Промокод (BOOK10, MINUS1500, FREEDEL)">
+        <button type="submit" class="btn-outline">Қолдану</button>
+      </form>
+      <p id="promo-message" class="promo-message"></p>
+
+      <div id="cart-drawer-summary" class="drawer-summary"></div>
+
+      <div id="checkout-steps-box" class="checkout-box">
+        <h3>Тапсырысты рәсімдеу</h3>
+        <p id="checkout-progress" class="muted">Қадам 1 / 3</p>
+        <p id="checkout-error" class="field-error"></p>
+
+        <div data-step-panel="1">
+          <div class="form-group">
+            <label for="order-phone">Телефон (+7 XXX XXX XX XX)</label>
+            <input type="text" id="order-phone" placeholder="+7 701 123 45 67">
+          </div>
+          <div class="form-group">
+            <label for="order-address">Жеткізу мекенжайы</label>
+            <input type="text" id="order-address" placeholder="Ақтау қ., 14-шағынаудан, 25-үй">
+          </div>
+          <button type="button" id="step1-next" class="btn">Келесі: Төлем</button>
+        </div>
+
+        <div data-step-panel="2" hidden>
+          <div class="form-group">
+            <label for="order-card">Карта нөмірі (Luhn тексерісі)</label>
+            <input type="text" id="order-card" placeholder="4532 0151 1283 0366">
+          </div>
+          <div class="card-actions">
+            <button type="button" id="step2-back" class="btn-outline">Артқа</button>
+            <button type="button" id="step2-next" class="btn">Келесі: Растау</button>
+          </div>
+        </div>
+
+        <div data-step-panel="3" hidden>
+          <p id="confirm-summary"></p>
+          <div class="card-actions">
+            <button type="button" id="step3-back" class="btn-outline">Артқа</button>
+            <button type="button" id="step3-submit" class="btn">Тапсырысты растау</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
 

@@ -15,9 +15,15 @@ import {
   initDragAndDropToCart,
   initSalesChart
 } from "./extras-a11y.js";
+import {
+  initWishlistFilter,
+  initStorageTools,
+  runQuickSelfChecks
+} from "./shop-extras.js";
 
 let catalogBooks = [...fallbackBooks];
 const shop = new ShopManager();
+let triggerCatalogRender = null;
 
 function syncActiveNavLink() {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -134,10 +140,23 @@ function initCatalog() {
     renderBooks();
   });
 
+  const applyWishlistFilter = initWishlistFilter(
+    shop,
+    () => catalogBooks,
+    () => {
+      visibleCount = PAGE_SIZE;
+      renderBooks();
+    }
+  );
+
   function renderBooks() {
     let list = isFeaturedOnly ? catalogBooks.slice(0, 4) : [...catalogBooks];
 
     if (!isFeaturedOnly) {
+      if (typeof applyWishlistFilter === "function") {
+        list = applyWishlistFilter(list);
+      }
+
       if (selectedGenre !== "Барлығы") {
         list = list.filter((b) => b.genre === selectedGenre);
       }
@@ -175,6 +194,8 @@ function initCatalog() {
     });
     shop.renderAll();
   }
+
+  triggerCatalogRender = renderBooks;
 
   if (!isFeaturedOnly && loadMoreSentinel) {
     const observer = new IntersectionObserver(
@@ -307,6 +328,7 @@ function initShopInteractions() {
     if (wishBtn) {
       e.stopPropagation();
       shop.toggleWishlist(wishBtn.dataset.wishBtn);
+      if (typeof triggerCatalogRender === "function") triggerCatalogRender();
       return;
     }
 
@@ -442,6 +464,11 @@ function initShopInteractions() {
 
     renderStep();
   }
+
+  initStorageTools(shop);
+  document.querySelector("#run-self-checks-btn")?.addEventListener("click", () => {
+    runQuickSelfChecks(shop);
+  });
 
   initDragAndDropToCart((bookId) => shop.addToCart(bookId, 1));
   shop.renderAll();
