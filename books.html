@@ -4,41 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Кітаптар каталогы — BookNest</title>
-  <meta name="description" content="BookNest кітап дүкенінің интерактивті каталогы.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:,">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="js/main.js"></script>
-  <link rel="icon" href="data:,">
 </head>
-<body>
+<body data-page="books">
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="logo">BookNest</a>
       <nav class="nav-menu" aria-label="Негізгі навигация">
         <ul class="nav-list">
-          <li><a href="admin.html">Админ</a></li>
           <li><a href="index.html">Басты бет</a></li>
-          <li><a href="books.html" aria-current="page">Каталог</a></li>
+          <li><a href="books.html" class="active" aria-current="page">Каталог</a></li>
           <li><a href="club.html">Оқу клубы</a></li>
           <li><a href="contact.html">Байланыс</a></li>
+          <li><a href="admin.html">Админ</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <select id="lang-select" class="lang-select" aria-label="Тілді таңдау">
-          <option value="kk">KK</option>
-          <option value="ru">RU</option>
-          <option value="en">EN</option>
-        </select>
-        <span class="wish-counter" title="Таңдаулылар">♡ <strong data-wishlist-count>0</strong></span>
         <button type="button" class="btn-outline" data-open-cart>Себет (<strong data-cart-count>0</strong>)</button>
         <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
-        <button type="button" class="burger-btn" aria-label="Мәзірді ашу" aria-expanded="false">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
       </div>
     </div>
   </header>
@@ -46,58 +32,42 @@
   <main class="container section">
     <h1 class="section-title">Кітаптар каталогы</h1>
 
-    <div class="catalog-controls">
-      <div class="catalog-top-bar">
-        <input type="search" id="search-input" class="search-input" placeholder="Кітап аты немесе автор бойынша іздеу...">
-        <select id="sort-select" class="sort-select" aria-label="Сұрыптау">
-          <option value="default">Әдепкі сұрыптау</option>
-          <option value="price-asc">Бағасы: арзаннан қымбатқа</option>
-          <option value="price-desc">Бағасы: қымбаттан арзанға</option>
-          <option value="rating-desc">Рейтинг бойынша</option>
-        </select>
-      </div>
-      <div id="genre-chips" class="genre-chips"></div>
-        <div class="card-actions">
-        <button type="button" id="wishlist-only-btn" class="btn-outline" aria-pressed="false">Тек таңдаулылар</button>
-        <button type="button" id="clear-cart-btn" class="btn-outline">Себетті тазарту</button>
-        <button type="button" id="reset-shop-data-btn" class="btn-outline">Деректерді ысыру</button>
-        <button type="button" id="run-self-checks-btn" class="btn-outline">Автотест</button>
-      </div>
+    <div class="catalog-controls" style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+      <input type="search" id="search-input" placeholder="Кітап немесе автор іздеу...">
+      <select id="sort-select" aria-label="Сұрыптау">
+        <option value="default">Әдепкі бойынша</option>
+        <option value="price-asc">Арзаннан қымбатқа</option>
+        <option value="price-desc">Қымбаттан арзанға</option>
+        <option value="rating-desc">Рейтинг бойынша</option>
+      </select>
     </div>
 
-    <div id="cart-drop-zone" class="drop-zone">Кітап карточкасын осы жерге сүйреп апарыңыз (Себетке)</div>
+    <div id="genre-chips" class="chips-row" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;"></div>
 
-    <p id="results-count" class="results-count"></p>
-    <div id="books-grid" class="cards-grid"></div>
-    <div id="catalog-status"></div>
-    <div id="load-more-sentinel" aria-hidden="true"></div>
-
-    <div id="empty-state" class="empty-state" hidden>
-      <p>Сұранысыңыз бойынша ешқандай кітап табылмады.</p>
-      <button type="button" id="reset-filters-btn" class="btn">Сүзгілерді тазалау</button>
+    <div class="card-actions" style="margin-bottom:1rem;">
+      <button type="button" id="wishlist-filter-btn" class="btn-outline">Тек таңдаулылар (<span data-wish-count>0</span>)</button>
+      <button type="button" id="clear-cart-btn" class="btn-outline">Себетті тазарту</button>
+      <button type="button" id="reset-filters-btn" class="btn-outline">Деректерді ысыру</button>
+      <button type="button" id="run-self-checks-btn" class="btn-outline">Автотест</button>
     </div>
 
-    <section class="section">
-      <h2 class="section-title">Сыртқы іздеу (Open Library API)</h2>
-      <input type="search" id="openlib-search-input" class="search-input" placeholder="Әлемдік базадан кітап іздеу...">
-      <p id="openlib-status" class="muted"></p>
-      <div id="openlib-results" class="cards-grid"></div>
-    </section>
+    <div id="drop-to-cart-zone" class="checkout-box" style="margin-bottom:1rem; text-align:center;">
+      Кітап карточкасын осы жерге сүйреп апарыңыз (Себетке)
+    </div>
 
-    <section class="section">
-      <h2 class="section-title">Тапсырыстар тарихы</h2>
-      <div id="orders-history"></div>
-    </section>
+    <p id="results-count" class="muted"></p>
+    <div id="catalog-status" class="muted"></div>
 
-    <section class="section">
-      <h2 class="section-title">Жанрлар бойынша құн статистикасы</h2>
-      <canvas id="sales-chart-canvas" width="600" height="240"></canvas>
-    </section>
+    <div id="books-grid" class="books-grid"></div>
+    <div id="empty-state" class="checkout-box" hidden>
+      <p>Кітаптар табылмады.</p>
+    </div>
+    <div id="load-more-sentinel"></div>
   </main>
 
-  <div id="book-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-dialog">
-      <button type="button" class="modal-close" aria-label="Жабу"></button>
+  <div id="book-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+    <div class="modal-panel">
+      <button type="button" class="modal-close" aria-label="Жабу">&times;</button>
       <div id="modal-body"></div>
     </div>
   </div>
@@ -106,87 +76,64 @@
     <div class="drawer-panel">
       <div class="drawer-header">
         <h2>Себет</h2>
-        <button type="button" class="drawer-close" aria-label="Жабу">&</button>
+        <button type="button" class="drawer-close" aria-label="Жабу">&times;</button>
       </div>
 
       <div id="cart-drawer-items" class="drawer-items"></div>
-
-      <form id="promo-form" class="promo-form">
-        <input type="text" id="promo-input" placeholder="Промокод (BOOK10, MINUS1500, FREEDEL)">
-        <button type="submit" class="btn-outline">Қолдану</button>
-      </form>
-      <p id="promo-message" class="promo-message"></p>
-
       <div id="cart-drawer-summary" class="drawer-summary"></div>
 
-      <div id="checkout-steps-box" class="checkout-box">
-        <h3>Тапсырысты рәсімдеу</h3>
+      <form id="promo-form" class="form-group" style="margin-top: 1rem;">
+        <label for="promo-input">Промокод (BOOK10 / BOOK20)</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="promo-input" placeholder="BOOK10">
+          <button type="submit" class="btn-outline">Қолдану</button>
+        </div>
+        <p id="promo-message" class="muted" style="margin-top: 0.35rem;"></p>
+      </form>
+
+      <div class="checkout-box" style="margin-top: 1rem;">
         <p id="checkout-progress" class="muted">Қадам 1 / 3</p>
-        <p id="checkout-error" class="field-error"></p>
+        <p id="checkout-error" style="color: var(--color-error, #ef4444);"></p>
 
         <div data-step-panel="1">
           <div class="form-group">
-            <label for="order-phone">Телефон (+7 XXX XXX XX XX)</label>
-            <input type="text" id="order-phone" placeholder="+7 701 123 45 67">
+            <label for="order-phone">Телефон</label>
+            <input type="tel" id="order-phone" placeholder="+7 777 123 45 67">
           </div>
           <div class="form-group">
-            <label for="order-address">Жеткізу мекенжайы</label>
-            <input type="text" id="order-address" placeholder="Ақтау қ., 14-шағынаудан, 25-үй">
+            <label for="order-address">Мекенжай</label>
+            <input type="text" id="order-address" placeholder="Ақтау, 14 мкр">
           </div>
-          <button type="button" id="step1-next" class="btn">Келесі: Төлем</button>
+          <button type="button" id="step1-next" class="btn">Келесі</button>
         </div>
 
         <div data-step-panel="2" hidden>
           <div class="form-group">
-            <label for="order-card">Карта нөмірі (Luhn тексерісі)</label>
-            <input type="text" id="order-card" placeholder="4532 0151 1283 0366">
+            <label for="order-card">Карта (тест: 4532015112830366)</label>
+            <input type="text" id="order-card" placeholder="4532015112830366">
           </div>
           <div class="card-actions">
             <button type="button" id="step2-back" class="btn-outline">Артқа</button>
-            <button type="button" id="step2-next" class="btn">Келесі: Растау</button>
+            <button type="button" id="step2-next" class="btn">Келесі</button>
           </div>
         </div>
 
         <div data-step-panel="3" hidden>
-          <p id="confirm-summary"></p>
+          <p id="confirm-summary" style="margin-bottom: 0.75rem;"></p>
           <div class="card-actions">
             <button type="button" id="step3-back" class="btn-outline">Артқа</button>
-            <button type="button" id="step3-submit" class="btn">Тапсырысты растау</button>
+            <button type="button" id="step3-submit" class="btn">Тапсырыс беру</button>
           </div>
         </div>
+      </div>
+
+      <div style="margin-top: 1.25rem;">
+        <h3>Тапсырыстар тарихы</h3>
+        <div id="orders-history"></div>
       </div>
     </div>
   </aside>
 
   <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
-
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div>
-        <h3>Біз туралы</h3>
-        <p>BookNest — кітапсүйер қауымды біріктіретін заманауи онлайн дүкен және оқу клубы.</p>
-      </div>
-      <div>
-        <h3>Сілтемелер</h3>
-        <ul>
-          <li><a href="index.html">Басты бет</a></li>
-          <li><a href="books.html">Каталог</a></li>
-          <li><a href="club.html">Оқу клубы</a></li>
-          <li><a href="contact.html">Байланыс</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Байланыс</h3>
-        <ul>
-          <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
-          <li><a href="https://t.me" target="_blank" rel="noopener">Telegram</a></li>
-          <li><a href="mailto:info@booknest.kz">info@booknest.kz</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="container footer-bottom">
-      <p> 2026 BookNest. Барлық құқықтар қорғалған.</p>
-    </div>
-  </footer>
 </body>
 </html>

@@ -244,51 +244,70 @@ export function initCartAndLikes() {
     syncLikeButtonsUI(wishlist);
   };
 
-  document.addEventListener("click", (e) => {
-    const addBtn = e.target.closest("[data-add-cart]");
-    if (addBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      addBookToCart(addBtn.dataset.addCart);
-      return;
-    }
-
-    const wishBtn = e.target.closest("[data-wish-btn]");
-    if (wishBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleLike(wishBtn.dataset.wishBtn);
-      return;
-    }
-
-    const drawer = document.querySelector("#cart-drawer");
-    if (e.target.closest("[data-open-cart]") && drawer) {
-      drawer.hidden = false;
-      renderCart();
-      return;
-    }
-    if ((e.target.closest(".drawer-close") || e.target === drawer) && drawer) {
-      drawer.hidden = true;
-      return;
-    }
-
-    const inc = e.target.closest(".qty-inc");
-    const dec = e.target.closest(".qty-dec");
-    const rem = e.target.closest(".qty-rem");
-    if (inc || dec || rem) {
-      const id = Number((inc || dec || rem).dataset.id);
-      const idx = cart.findIndex((i) => Number(i.id) === id);
-      if (idx === -1) return;
-      if (inc) cart[idx].qty += 1;
-      if (dec) {
-        cart[idx].qty -= 1;
-        if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  document.addEventListener(
+    "click",
+    (e) => {
+      const addBtn = e.target.closest("[data-add-cart]");
+      if (addBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        addBookToCart(addBtn.dataset.addCart);
+        return;
       }
-      if (rem) cart.splice(idx, 1);
-      saveCart();
-      renderCart();
-    }
-  });
+
+      const wishBtn = e.target.closest("[data-wish-btn]");
+      if (wishBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        toggleLike(wishBtn.dataset.wishBtn);
+        return;
+      }
+
+      if (e.target.closest("#clear-cart-btn")) {
+        e.preventDefault();
+        cart = [];
+        discountRate = 0;
+        saveCart();
+        renderCart();
+        showToast("Себет тазартылды");
+        return;
+      }
+
+      const drawer = document.querySelector("#cart-drawer");
+      if (e.target.closest("[data-open-cart]") && drawer) {
+        drawer.hidden = false;
+        renderCart();
+        return;
+      }
+      if ((e.target.closest(".drawer-close") || e.target === drawer) && drawer) {
+        drawer.hidden = true;
+        return;
+      }
+
+      const inc = e.target.closest(".qty-inc");
+      const dec = e.target.closest(".qty-dec");
+      const rem = e.target.closest(".qty-rem");
+      if (inc || dec || rem) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const id = Number((inc || dec || rem).dataset.id);
+        const idx = cart.findIndex((i) => Number(i.id) === id);
+        if (idx === -1) return;
+        if (inc) cart[idx].qty += 1;
+        if (dec) {
+          cart[idx].qty -= 1;
+          if (cart[idx].qty <= 0) cart.splice(idx, 1);
+        }
+        if (rem) cart.splice(idx, 1);
+        saveCart();
+        renderCart();
+      }
+    },
+    true
+  );
 
   const drawer = document.querySelector("#cart-drawer");
   if (drawer) {
