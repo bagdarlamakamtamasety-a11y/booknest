@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — BookNest</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body data-page="admin">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">BookNest</a>
+      <nav class="nav-menu" aria-label="Негізгі навигация">
+        <ul class="nav-list">
+          <li><a href="index.html">Басты бет</a></li>
+          <li><a href="books.html">Каталог</a></li>
+          <li><a href="club.html">Оқу клубы</a></li>
+          <li><a href="contact.html">Байланыс</a></li>
+          <li><a href="admin.html" class="active" aria-current="page">Админ</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="btn-outline" data-open-cart>Себет (<strong data-cart-count>0</strong>)</button>
+        <button type="button" class="theme-toggle" aria-label="Қараңғы тақырып">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1 class="section-title">BookNest — Басқару панелі (Level 4)</h1>
+
+    <section class="section">
+      <h2>Жеке кабинет және оқу трекері (91–100)</h2>
+      <div id="user-profile-panel"></div>
+      <div id="reading-tracker-box" class="section"></div>
+    </section>
+
+    <section class="section">
+      <h2>Жаңа кітап қосу (101–105)</h2>
+      <form id="admin-add-book-form" class="checkout-box">
+        <div class="form-group">
+          <label for="adm-title">Кітап атауы</label>
+          <input type="text" id="adm-title" required placeholder="Абай жолы (2-том)">
+        </div>
+        <div class="form-group">
+          <label for="adm-author">Автор</label>
+          <input type="text" id="adm-author" required placeholder="Мұхтар Әуезов">
+        </div>
+        <div class="form-group">
+          <label for="adm-genre">Жанр</label>
+          <input type="text" id="adm-genre" value="Роман">
+        </div>
+        <div class="form-group">
+          <label for="adm-price">Бағасы (₸)</label>
+          <input type="number" id="adm-price" required min="100" step="50" placeholder="4500">
+        </div>
+        <div class="form-group">
+          <label for="adm-rating">Рейтинг (1–5)</label>
+          <input type="number" id="adm-rating" min="1" max="5" step="0.1" value="4.9">
+        </div>
+        <div class="form-group">
+          <label for="adm-year">Жылы</label>
+          <input type="number" id="adm-year" min="1800" max="2026" value="2026">
+        </div>
+        <div class="form-group">
+          <label for="adm-cover">Мұқаба жолы</label>
+          <input type="text" id="adm-cover" value="images/book-placeholder.jpg">
+        </div>
+        <div class="form-group">
+          <label for="adm-desc">Сипаттама</label>
+          <input type="text" id="adm-desc" placeholder="Қысқаша сипаттама">
+        </div>
+        <button type="submit" class="btn">Кітапты қосу</button>
+      </form>
+    </section>
+
+    <section class="section">
+      <h2>Каталог кітаптары</h2>
+      <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th>Атауы</th>
+              <th>Автор</th>
+              <th>Жанр</th>
+              <th>Бағасы</th>
+              <th>Рейтинг</th>
+              <th>Әрекет</th>
+            </tr>
+          </thead>
+          <tbody id="admin-books-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Тапсырыстарды басқару және чектер (106–115)</h2>
+      <div class="card-actions" style="margin-bottom: 1rem;">
+        <button type="button" id="admin-export-json-btn" class="btn-outline">JSON экспорттау</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Байланыс / Мекенжай</th>
+              <th>Сомасы</th>
+              <th>Статус</th>
+              <th>Чек</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <aside id="cart-drawer" class="drawer-backdrop" hidden role="dialog" aria-modal="true" aria-label="Себет">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2>Себет</h2>
+        <button type="button" class="drawer-close" aria-label="Жабу"></button>
+      </div>
+      <div id="cart-drawer-items" class="drawer-items"></div>
+      <div id="cart-drawer-summary" class="drawer-summary"></div>
+    </div>
+  </aside>
+
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Жоғарыға көтерілу">↑</button>
+</body>
+</html>

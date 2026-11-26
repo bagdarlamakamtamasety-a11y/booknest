@@ -20,10 +20,21 @@ import {
   initStorageTools,
   runQuickSelfChecks
 } from "./shop-extras.js";
+import { UserAccountManager } from "./user-account.js";
+import { getCustomBooks, initAdminPage } from "./admin.js";
 
-let catalogBooks = [...fallbackBooks];
+let catalogBooks = [...getCustomBooks(), ...fallbackBooks];
 const shop = new ShopManager();
+const userAccount = new UserAccountManager();
 let triggerCatalogRender = null;
+
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+}
 
 function syncActiveNavLink() {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -243,7 +254,7 @@ function initCatalog() {
   const fetchBooks = async () => {
     const loaded = await loadBooksFromJson(statusBox, fetchBooks);
     if (loaded) {
-      catalogBooks = loaded;
+      catalogBooks = [...getCustomBooks(), ...loaded];
       buildChips();
       renderBooks();
       initSalesChart(catalogBooks);
@@ -454,12 +465,17 @@ function initShopInteractions() {
         phone: phoneInput?.value,
         address: addressInput?.value
       });
+      const earnedBonus = userAccount.earnBonusFromOrder(order.total);
       if (phoneInput) phoneInput.value = "";
       if (addressInput) addressInput.value = "";
       if (cardInput) cardInput.value = "";
       step = 1;
       renderStep();
-      showToast(`Тапсырыс #${order.id} қабылданды!`);
+      showToast(
+        earnedBonus > 0
+          ? `Тапсырыс #${order.id} қабылданды! +${earnedBonus} ₸ бонус`
+          : `Тапсырыс #${order.id} қабылданды!`
+      );
     });
 
     renderStep();
@@ -668,6 +684,8 @@ function bootAll() {
   initScrollReveal();
   initBackToTop();
   initOpenLibrarySearch();
+  userAccount.renderAccountWidget();
+  initAdminPage(fallbackBooks);
 
   if (document.body.dataset.page === "book-detail") {
     loadBooksFromJson(null).then((loaded) => {
@@ -676,6 +694,7 @@ function bootAll() {
   }
 }
 
+registerServiceWorker();
 initSpaRouter();
 window.addEventListener("popstate", syncActiveNavLink);
 document.addEventListener("booknest:route-loaded", bootAll);
