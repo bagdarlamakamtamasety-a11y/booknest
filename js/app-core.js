@@ -167,6 +167,9 @@ export function initSpaRouter() {
 
     const url = new URL(link.href, window.location.origin);
     if (url.origin !== window.location.origin) return;
+    if (url.pathname.endsWith("/admin.html") || url.pathname === "/admin") {
+  return;
+}
 
     // Если открыт file:// или нужно обычное поведение при отсутствии сервера, не ломаем переход
     if (window.location.protocol === "file:") return;
