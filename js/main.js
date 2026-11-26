@@ -22,6 +22,7 @@ import {
 } from "./shop-extras.js";
 import { UserAccountManager } from "./user-account.js";
 import { getCustomBooks, initAdminPage } from "./admin.js";
+import { initCartAndLikes } from "./cart-and-like-fix.js";
 
 let catalogBooks = [...getCustomBooks(), ...fallbackBooks];
 const shop = new ShopManager();
@@ -192,7 +193,6 @@ function initCatalog() {
 
     if (list.length === 0) {
       if (emptyState) emptyState.hidden = false;
-      shop.renderAll();
       return;
     }
 
@@ -203,7 +203,6 @@ function initCatalog() {
       card.setAttribute("draggable", "true");
       grid.appendChild(card);
     });
-    shop.renderAll();
   }
 
   triggerCatalogRender = renderBooks;
@@ -326,168 +325,12 @@ function initBookModal() {
   });
 }
 
-function initShopInteractions() {
-  document.addEventListener("click", (e) => {
-    const addBtn = e.target.closest("[data-add-cart]");
-    if (addBtn) {
-      e.stopPropagation();
-      shop.addToCart(addBtn.dataset.addCart, 1);
-      return;
-    }
-
-    const wishBtn = e.target.closest("[data-wish-btn]");
-    if (wishBtn) {
-      e.stopPropagation();
-      shop.toggleWishlist(wishBtn.dataset.wishBtn);
-      if (typeof triggerCatalogRender === "function") triggerCatalogRender();
-      return;
-    }
-
-    const repeatBtn = e.target.closest(".repeat-order-btn");
-    if (repeatBtn) {
-      shop.repeatOrder(repeatBtn.dataset.orderId);
-    }
-  });
-
-  const drawer = document.querySelector("#cart-drawer");
-  const openBtns = document.querySelectorAll("[data-open-cart]");
-  const closeBtn = drawer?.querySelector(".drawer-close");
-
-  if (drawer) {
-    let prevFocused = null;
-
-    const openDrawer = () => {
-      prevFocused = document.activeElement;
-      drawer.hidden = false;
-      document.body.style.overflow = "hidden";
-      closeBtn?.focus();
-      shop.renderAll();
-    };
-
-    const closeDrawer = () => {
-      drawer.hidden = true;
-      document.body.style.overflow = "";
-      prevFocused?.focus();
-    };
-
-    openBtns.forEach((b) => b.addEventListener("click", openDrawer));
-    closeBtn?.addEventListener("click", closeDrawer);
-
-    drawer.addEventListener("click", (e) => {
-      if (e.target === drawer) closeDrawer();
-
-      const inc = e.target.closest(".qty-inc");
-      const dec = e.target.closest(".qty-dec");
-      const rem = e.target.closest(".qty-rem");
-      if (inc) shop.updateQty(inc.dataset.id, 1);
-      if (dec) shop.updateQty(dec.dataset.id, -1);
-      if (rem) shop.removeFromCart(rem.dataset.id);
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !drawer.hidden) closeDrawer();
-    });
-
-    const promoForm = drawer.querySelector("#promo-form");
-    const promoMsg = drawer.querySelector("#promo-message");
-    promoForm?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const input = promoForm.querySelector("#promo-input");
-      const res = shop.applyPromo(input.value);
-      if (promoMsg) {
-        promoMsg.textContent = res.message;
-        promoMsg.style.color = res.ok ? "var(--color-primary)" : "var(--color-error)";
-      }
-      if (res.ok) input.value = "";
-    });
-
-    let step = 1;
-    const stepPanels = drawer.querySelectorAll("[data-step-panel]");
-    const progressEl = drawer.querySelector("#checkout-progress");
-    const errorEl = drawer.querySelector("#checkout-error");
-    const phoneInput = drawer.querySelector("#order-phone");
-    const addressInput = drawer.querySelector("#order-address");
-    const cardInput = drawer.querySelector("#order-card");
-    const confirmSummary = drawer.querySelector("#confirm-summary");
-
-    const renderStep = () => {
-      stepPanels.forEach((p) => {
-        p.hidden = Number(p.dataset.stepPanel) !== step;
-      });
-      if (progressEl) progressEl.textContent = `Қадам ${step} / 3`;
-      if (errorEl) errorEl.textContent = "";
-      if (step === 3 && confirmSummary) {
-        const totals = shop.getTotals();
-        confirmSummary.textContent = `Телефон: ${phoneInput?.value}, Мекенжай: ${addressInput?.value}, Сомасы: ${formatPrice(totals.total)}`;
-      }
-    };
-
-    drawer.querySelector("#step1-next")?.addEventListener("click", () => {
-      const errs = validateCheckoutFields({
-        phone: phoneInput?.value,
-        address: addressInput?.value,
-        card: "4532015112830366"
-      });
-      if (errs.phone || errs.address) {
-        if (errorEl) errorEl.textContent = errs.phone || errs.address;
-        return;
-      }
-      step = 2;
-      renderStep();
-    });
-
-    drawer.querySelector("#step2-back")?.addEventListener("click", () => {
-      step = 1;
-      renderStep();
-    });
-
-    drawer.querySelector("#step2-next")?.addEventListener("click", () => {
-      const errs = validateCheckoutFields({
-        phone: phoneInput?.value,
-        address: addressInput?.value,
-        card: cardInput?.value
-      });
-      if (errs.card) {
-        if (errorEl) errorEl.textContent = errs.card;
-        return;
-      }
-      step = 3;
-      renderStep();
-    });
-
-    drawer.querySelector("#step3-back")?.addEventListener("click", () => {
-      step = 2;
-      renderStep();
-    });
-
-    drawer.querySelector("#step3-submit")?.addEventListener("click", () => {
-      const order = shop.createOrder({
-        phone: phoneInput?.value,
-        address: addressInput?.value
-      });
-      const earnedBonus = userAccount.earnBonusFromOrder(order.total);
-      if (phoneInput) phoneInput.value = "";
-      if (addressInput) addressInput.value = "";
-      if (cardInput) cardInput.value = "";
-      step = 1;
-      renderStep();
-      showToast(
-        earnedBonus > 0
-          ? `Тапсырыс #${order.id} қабылданды! +${earnedBonus} ₸ бонус`
-          : `Тапсырыс #${order.id} қабылданды!`
-      );
-    });
-
-    renderStep();
-  }
-
+function initShopExtrasOnly() {
   initStorageTools(shop);
   document.querySelector("#run-self-checks-btn")?.addEventListener("click", () => {
     runQuickSelfChecks(shop);
   });
-
   initDragAndDropToCart((bookId) => shop.addToCart(bookId, 1));
-  shop.renderAll();
 }
 
 function initContactForm() {
@@ -676,7 +519,7 @@ function bootAll() {
   initBurgerMenu();
   initCatalog();
   initBookModal();
-  initShopInteractions();
+  initShopExtrasOnly();
   initContactForm();
   initFaqAccordion();
   initHeroSlider();
@@ -696,6 +539,7 @@ function bootAll() {
 
 registerServiceWorker();
 initSpaRouter();
+initCartAndLikes();
 window.addEventListener("popstate", syncActiveNavLink);
 document.addEventListener("booknest:route-loaded", bootAll);
 bootAll();
